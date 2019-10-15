@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { View, Text, Image, TouchableWithoutFeedback } from "react-native";
 import IconButton from "./IconButton";
+import { Animated, Easing } from "react-native";
 
 const Card = ({
   item,
@@ -9,27 +10,51 @@ const Card = ({
   bookmarkAction,
   shareAction
 }) => {
+  let scaleValue = new Animated.Value(0); //create animated_value
+  const cardScale = scaleValue.interpolate({
+    //intepolated animated_value for animation
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 1.1, 1.2]
+  });
+  let transformStyle = { ...styles.card, transform: [{ scale: cardScale }] }; //add animated_value to a style attribute to be used in Animated.View component
   return (
     <TouchableWithoutFeedback
-      onPress={() => {
+      onPressIn={() => {
+        //start animation on any event
+        scaleValue.setValue(0);
+        Animated.timing(scaleValue, {
+          toValue: 1,
+          duration: 250,
+          easing: Easing.linear,
+          useNativeDriver: true
+        }).start();
+
         cardAction();
       }}
-    >
-      <View style={styles.card}>
+      onPressOut={() => {
+        //start animation on any event
+        Animated.timing(scaleValue, {
+          toValue: 0,
+          duration: 100,
+          easing: Easing.linear,
+          useNativeDriver: true
+        }).start();
+      }}>
+      <Animated.View style={transformStyle}>
         <Image source={item.pic} style={styles.thumbnail} />
         <Text style={styles.name}>{item.name}</Text>
         <View style={styles.icons}>
           <IconButton
-            icon="search"
+            icon='search'
             onPress={() => {
               viewAction(item.name, item.full_pic);
             }}
             data={item}
           />
-          <IconButton icon="bookmark" onPress={bookmarkAction} data={item} />
-          <IconButton icon="share" onPress={shareAction} data={item} />
+          <IconButton icon='bookmark' onPress={bookmarkAction} data={item} />
+          <IconButton icon='share' onPress={shareAction} data={item} />
         </View>
-      </View>
+      </Animated.View>
     </TouchableWithoutFeedback>
   );
 };
